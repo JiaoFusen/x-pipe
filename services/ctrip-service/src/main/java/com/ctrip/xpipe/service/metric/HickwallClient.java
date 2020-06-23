@@ -95,12 +95,11 @@ public class HickwallClient {
     private boolean send(String s) throws IOException {
         HttpURLConnection httpURLConnection = this.connection;
         if(httpURLConnection == null) {
-            httpURLConnection = getConnection();
+            this.connection = httpURLConnection = getConnection();
         }
         boolean isValidConnection = false;
 
         boolean var5 = false;
-        InputStream in;
         OutputStream out = null;
         label99: {
             try {
@@ -126,40 +125,31 @@ public class HickwallClient {
                 }
             }finally {
                 if (isValidConnection) {
-                    if (httpURLConnection != null) {
-                        in = httpURLConnection.getErrorStream();
-                        if (in != null) {
-                            in.close();
-                        }
-
-                        httpURLConnection.disconnect();
-                    }
-
+                    closeIfNotValidConnect(httpURLConnection);
                 }
             }
 
             if (httpURLConnection != null) {
-                in = httpURLConnection.getErrorStream();
-                if (in != null) {
-                    in.close();
-                }
-
-                httpURLConnection.disconnect();
+                closeIfNotValidConnect(httpURLConnection);
             }
 
             return var5;
         }
 
         if (httpURLConnection != null) {
-            in = httpURLConnection.getErrorStream();
-            if (in != null) {
-                in.close();
-            }
-
-            httpURLConnection.disconnect();
+            closeIfNotValidConnect(httpURLConnection);
         }
 
         return var5;
+    }
+
+    private void closeIfNotValidConnect(HttpURLConnection httpURLConnection) throws IOException {
+        InputStream in = httpURLConnection.getErrorStream();
+        if (in != null) {
+            in.close();
+            httpURLConnection.disconnect();
+            this.connection = null;
+        }
     }
 
 }
